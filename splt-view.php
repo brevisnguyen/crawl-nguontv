@@ -10,9 +10,9 @@ foreach (get_plugins() as $key => $value) {
 	}
 }
 ?>
-<link href="<?php echo home_url(); ?>/wp-content/plugins/crawl_nguontv/style.css" rel="stylesheet" type="text/css" />
-<script src="<?php echo home_url(); ?>/wp-content/plugins/crawl_nguontv/jquery-3.5.1.min.js" type="text/javascript"></script>
-<script src="<?php echo home_url(); ?>/wp-content/plugins/crawl_nguontv/main.js" type="text/javascript"></script>
+<link href="<?php echo home_url(); ?>/wp-content/plugins/crawl-nguontv/style.css" rel="stylesheet" type="text/css" />
+<script src="<?php echo home_url(); ?>/wp-content/plugins/crawl-nguontv/jquery-3.5.1.min.js" type="text/javascript"></script>
+<script src="<?php echo home_url(); ?>/wp-content/plugins/crawl-nguontv/main.js" type="text/javascript"></script>
 <center>
 	<h1>Nguon-TV</h1>
 </center>
@@ -30,7 +30,7 @@ foreach (get_plugins() as $key => $value) {
 		<?php
 			wp_dropdown_users($args);
 		?>
-		<input type="hidden" id="path" name="path" value="<?php echo home_url(); ?>/wp-content/plugins/crawl_nguontv/" required="required" />
+		<input type="hidden" id="path" name="path" value="<?php echo home_url(); ?>/wp-content/plugins/crawl-nguontv/" required="required" />
 
 		<h5 class="card-title">Lấy dữ liệu</h5>
 		&emsp;<input type="radio" id="typeleech" class="typeleech" name="typeleech" value="full" />Lấy tất cả dữ liệu<br>

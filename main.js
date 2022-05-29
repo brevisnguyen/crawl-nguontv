@@ -148,6 +148,16 @@ $(document).ready(function () {
 			$.get(graburl, function(response) {
 				// Hiển thị quá trình. Chi tiết do splt-grab.php xử lý
 				objJson = JSON.parse(response);
+				if (objJson.code > 1) {
+					// Thu thập lỗi
+					$("#ketqua").html('');
+					$("#ketqua").append(objJson.msg);
+					// Thu thập trang tiếp theo
+					procnumpage ++;
+					if (procnumpage <= pageCount) {
+						loop_get_detail_page(procadd, procnumpage);
+					}
+				}
 				procpost += objJson.saved_post;
 				showlogs();
 
