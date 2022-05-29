@@ -1,0 +1,12 @@
+body{
+	font-family:hadpro;
+	font-size:14px;
+}
+.card {
+	min-width: 100%;
+}
+textarea{
+	width:98%;
+    margin:5px 0;
+    padding:1%;
+}
