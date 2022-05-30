@@ -142,19 +142,47 @@ function handle_data($data)
 			}
 		}
 		$time = current_time('mysql');
-		$slug = $val['vod_en'];
-		$title = $val['vod_name'];
+		$slug = trim($val['vod_en']);
+		$title = trim($val['vod_name']);
 		$check_dup = $wpdb->get_results("SELECT ID FROM `$wpdb->posts` WHERE `post_name`='$slug'  AND `post_type`='post'");
 		$check_dup1 = $wpdb->get_results("SELECT ID FROM `$wpdb->posts` WHERE `post_title`='$title'  AND `post_type`='post'  AND `post_status`='publish'");
 
-		// duplicate post title
-		if ($check_dup1[0]) {
-			array_push($msg, 'Trùng lặp bài viết ['.$title.']');
+		if ($check_dup1[0]) {  // duplicate post title
+			if (count($check_dup1)==1) {
+				$pidssss=$check_dup1[0]->ID;
+				$halim_metabox_options0=$wpdb->get_var( "SELECT `meta_value` FROM `$wpdb->postmeta` WHERE `meta_key`='_halim_metabox_options' AND `post_id`='$pidssss'");
+				$halim_metabox_options1=unserialize($halim_metabox_options0);
+				
+				$dup_ogri_name=$halim_metabox_options1['halim_original_title'];
+				if(trim($dup_ogri_name)==trim($val['vod_name'])){
+					if($halim_metabox_options1['halim_episode']!=$val['status']['epnow']){
+						// dupdup2:
+						$pidssss=$check_dup1[0]->ID;
+						$halim_metabox_options1['halim_episode']='[ Tập ' . $val['status']['epnow'] . '/' . $val['status']['eptotal'] . ' - End ]';
+						$halim_metabox_options1['halim_total_episode']=$val['status']['eptotal'];
+						if($val['status']['epnow'] > 1){
+							$halim_metabox_options1['halim_movie_formality']='tv_series';
+						}
+						else{
+							$halim_metabox_options1['halim_movie_formality']='single_movies';
+						}
+						$wpdb->update($wpdb->postmeta, array('meta_value' =>  serialize($halim_metabox_options1)), array( 'post_id' => $pidssss,'meta_key'=>'_halim_metabox_options'));										
+						$wpdb->update($wpdb->prefix.'posts', array('post_modified' =>  $time,'post_modified_gmt' =>$time), array( 'ID' => $pidssss));
+						// link stream
+						$halimmovies2 = json_encode($val['vod_play_list'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+						$wpdb->update($wpdb->postmeta, array('meta_value' =>  serialize($halimmovies2)), array( 'post_id' => $pidssss,'meta_key'=>'_halimmovies'));
+						array_push($msg, 'Cập nhật ['.$title.'] thành công');
+					} else{
+						array_push($msg, 'Trùng lặp bài viết ['.$title.']');
+					}
+				}
+			}
 			continue;
-		} elseif ($check_dup[0]) {
-			array_push($msg, 'Trùng lặp slug ['.$slug.']');
-			continue;
+		} elseif ($check_dup[0]) {  // duplicate post slug
+			$slug = $slug.'-'.$val['vod_year'];
+			goto nodup;
 		} else {
+			nodup:
 			$contentsave = array(
 				'post_author' => $_GET['author'],
 				'post_title' =>  $title,

@@ -157,28 +157,29 @@ $(document).ready(function () {
 					if (procnumpage <= pageCount) {
 						loop_get_detail_page(procadd, procnumpage);
 					}
-				}
-				procpost += objJson.saved_post;
-				showlogs();
-
-				$("#ketqua").html('');
-				var li = '';
-				objJson.msg.forEach(element => {
-					if (element.includes("thành công")) {
-						li += '<li style="color: green;">' + element + '</li>';
-					} else {
-						li += '<li style="color: red;">' + element + '</li>';
-					}
-				});
-				$("#ketqua").append('<ol>'+ li + '</ol>');
-
-				procnumpage ++;
-				if (procnumpage <= pageCount) {
-					loop_get_detail_page(procadd, procnumpage);
 				} else {
-					$("#ketqua").append('Hoàn thành thu thập');
-					start = 0;
-					return;
+					procpost += objJson.saved_post;
+					showlogs();
+
+					$("#ketqua").html('');
+					var li = '';
+					objJson.msg.forEach(element => {
+						if (element.includes("thành công")) {
+							li += '<li style="color: green;">' + element + '</li>';
+						} else {
+							li += '<li style="color: red;">' + element + '</li>';
+						}
+					});
+					$("#ketqua").append('<ol>'+ li + '</ol>');
+
+					procnumpage ++;
+					if (procnumpage <= pageCount) {
+						loop_get_detail_page(procadd, procnumpage);
+					} else {
+						$("#ketqua").append('Hoàn thành thu thập');
+						start = 0;
+						return;
+					}
 				}
 			});
 		}
