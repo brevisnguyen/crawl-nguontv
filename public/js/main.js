@@ -2,43 +2,39 @@
     'use strict';
 
     $(function() {
-        //
-        var ajaxQueue = $({});
-        $.ajaxQueue = function(ajaxOpts) {
-            var oldComplete = ajaxOpts.complete;
-            ajaxQueue.queue(function(next) {
-            ajaxOpts.complete = function() {
-                if (oldComplete) oldComplete.apply(this, arguments);
-                next();
-            };
-            $.ajax(ajaxOpts);
-            });
-        };
         // DOM elements
-        const buttonCheckApi    = $("#api-check");
-        const buttonRollCrawl   = $("#roll-crawl");
-        const buttonUpdateCrawl = $("#update-crawl");
-        const buttonFullCrawl   = $("#full-crawl");
-        const buttonPauseCrawl  = $("#pause-crawl");
-        const buttonResumeCrawl = $("#resume-crawl");
-        const alertBox          = $("#alert-box");
-        const moviesListDiv     = $("#movies-list");
-        const divCurrentPage    = $("#current-page-crawl");
+        const buttonCheckApi        = $("#api-check");
+        const buttonRollCrawl       = $("#roll-crawl");
+        const buttonUpdateCrawl     = $("#update-crawl");
+        const buttonFullCrawl       = $("#full-crawl");
+        const buttonPageFromTo      = $("#page-from-to");
+        const buttonSelectedCrawl   = $("#selected-crawl");
+        const buttonPauseCrawl      = $("#pause-crawl");
+        const buttonResumeCrawl     = $("#resume-crawl");
+        const alertBox              = $("#alert-box");
+        const moviesListDiv         = $("#movies-list");
+        const divCurrentPage        = $("#current-page-crawl");
+        const inputPageFrom         = $("input[name=page-from]");
+        const inputPageTo           = $("input[name=page-to]");
 
         // Variable
         let latestPageList = [];
         let fullPageList = [];
+        let pageFromToList = [];
         let tempPageList = [];
         let tempMoviesId = [];
         let tempMovies = [];
         let tempHour = '';
         let apiUrl = '';
         let isStopByUser = false;
+        let maxPageTo = 0;
 
         // Disable crawl function if api url is not verify
         buttonRollCrawl.prop("disabled", true);
         buttonUpdateCrawl.prop("disabled", true);
         buttonFullCrawl.prop("disabled", true);
+        buttonPageFromTo.prop("disabled", true);
+        buttonSelectedCrawl.prop("disabled", true);
 
         // Check input api first
         buttonCheckApi.click(function (e) {
@@ -50,6 +46,8 @@
                 alertBox.html("JSON API không thể để trống");
                 return false;
             }
+            $("#movies-table tbody").html('');
+            moviesListDiv.hide();
             $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...`);
             $.ajax({
                 type: "POST",
@@ -70,12 +68,46 @@
                         buttonRollCrawl.prop("disabled", false);
                         buttonUpdateCrawl.prop("disabled", false);
                         buttonFullCrawl.prop("disabled", false);
+                        buttonPageFromTo.prop("disabled", false);
+                        buttonSelectedCrawl.prop("disabled", false);
                         latestPageList = data.latest_list_page;
                         fullPageList = data.full_list_page
+                        maxPageTo = data.last_page;
                         $("#movies-total").html(data.total); $("#last-page").html(data.last_page); $("#per-page").html(data.per_page);
                     }
                 },
             });
+        });
+
+        // Set page from to
+        buttonPageFromTo.click(function (e) {
+            e.preventDefault();
+            alertBox.html('');
+            alertBox.hide();
+            let pageFrom = parseInt(inputPageFrom.val());
+            let pageTo = parseInt(inputPageTo.val());
+            if (pageTo > maxPageTo || pageFrom > pageTo || pageFrom <= 0 || pageTo <= 0) {
+                alertBox.show();
+                alertBox.removeClass().addClass("alert alert-danger");
+                alertBox.html(`Có lỗi xảy ra khi crawl theo số page.`);
+                return;
+            }
+            let pages = [];
+            for (let i = pageFrom; i <= pageTo; i++) {
+                pages.push(i);
+            }
+            pageFromToList = pages;
+            alertBox.show();
+            alertBox.removeClass().addClass("alert alert-success");
+            alertBox.html(`Cập nhật số page thành công`);
+        });
+
+        // Crawl from pageFrom to pageTo
+        buttonSelectedCrawl.click(function (e) {
+            e.preventDefault();
+            $("#movies-table").show();
+            $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...`);
+            crawl_movies_page(pageFromToList, '');
         });
 
         // Update today's movies
@@ -100,6 +132,7 @@
             $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...`);
             fullPageList.sort((a, b) => 0.5 - Math.random());
             latestPageList.sort((a, b) => 0.5 - Math.random());
+            pageFromToList.sort((a, b) => 0.5 - Math.random());
             $(this).html('Trộn Link OK');
         });
 
@@ -130,9 +163,11 @@
                 buttonRollCrawl.prop("disabled", false);
                 buttonUpdateCrawl.prop("disabled", false);
                 buttonFullCrawl.prop("disabled", false);
+                buttonSelectedCrawl.html("Thu Thập");
                 buttonUpdateCrawl.html("Thu Thập Hôm Nay");
                 buttonFullCrawl.html("Thu Thập Toàn Bộ");
                 tempPageList = [];
+                pageFromToList = [];
                 tempHour = '';
                 return;
             }
@@ -151,8 +186,10 @@
                     divCurrentPage.show();
                     $("#current-page-crawl h4").html(`Page ${currentPage}`);
                     buttonRollCrawl.prop("disabled", true);
+                    buttonSelectedCrawl.prop("disabled", true);
                     buttonUpdateCrawl.prop("disabled", true);
                     buttonFullCrawl.prop("disabled", true);
+                    buttonResumeCrawl.prop("disabled", true);
                     moviesListDiv.show();
                 },
                 success: function (response) {
