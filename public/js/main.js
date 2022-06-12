@@ -66,6 +66,7 @@
                     } else {
                         alertBox.hide();
                         buttonRollCrawl.prop("disabled", false);
+                        buttonRollCrawl.html("Trộn Link");
                         buttonUpdateCrawl.prop("disabled", false);
                         buttonFullCrawl.prop("disabled", false);
                         buttonPageFromTo.prop("disabled", false);
