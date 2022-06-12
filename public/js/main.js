@@ -84,22 +84,22 @@
             e.preventDefault();
             alertBox.html('');
             alertBox.hide();
-            let pageFrom = parseInt(inputPageFrom.val());
-            let pageTo = parseInt(inputPageTo.val());
-            if (pageTo > maxPageTo || pageFrom > pageTo || pageFrom <= 0 || pageTo <= 0) {
+            let pageFrom = inputPageFrom.val();
+            let pageTo = inputPageTo.val();
+            if (pageTo > maxPageTo || pageFrom > pageTo || pageFrom <= 0 || pageTo <= 0 || pageFrom == null || pageTo == null) {
                 alertBox.show();
                 alertBox.removeClass().addClass("alert alert-danger");
                 alertBox.html(`Có lỗi xảy ra khi crawl theo số page.`);
                 return;
             }
             let pages = [];
-            for (let i = pageFrom; i <= pageTo; i++) {
+            for (let i = parseInt(pageFrom); i <= pageTo; i++) {
                 pages.push(i);
             }
             pageFromToList = pages;
             alertBox.show();
             alertBox.removeClass().addClass("alert alert-success");
-            alertBox.html(`Cập nhật số page thành công`);
+            alertBox.html(`Cập nhật số page thành công: ${pageFrom} tới ${pageTo}`);
         });
 
         // Crawl from pageFrom to pageTo
