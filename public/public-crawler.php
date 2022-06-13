@@ -231,7 +231,7 @@ class Nguon_Movies_Crawler {
                 'pic_url' => $data['vod_pic'],
                 'actor' => $this->format_text($data['vod_actor']),
                 'director' => $this->format_text($data['vod_director']),
-                'episode' => $data->vod_remarks,
+                'episode' => $data['vod_remarks'],
                 'episodes' => $this->get_play_url($data['vod_play_from'], $data['vod_play_note'], $data['vod_play_url']),
                 'country' => $data['vod_area'],
                 'language' => $data['vod_lang'],
