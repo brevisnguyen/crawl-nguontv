@@ -11,6 +11,7 @@
         const buttonSelectedCrawl   = $("#selected-crawl");
         const buttonPauseCrawl      = $("#pause-crawl");
         const buttonResumeCrawl     = $("#resume-crawl");
+        const buttonOneCrawl        = $("#onemovie-crawl");
         const alertBox              = $("#alert-box");
         const moviesListDiv         = $("#movies-list");
         const divCurrentPage        = $("#current-page-crawl");
@@ -77,6 +78,49 @@
                         $("#movies-total").html(data.total); $("#last-page").html(data.last_page); $("#per-page").html(data.per_page);
                     }
                 },
+            });
+        });
+
+        // Crawl one movie
+        buttonOneCrawl.click(function (e) {
+            e.preventDefault();
+            $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...`);
+            let oneLink = $("#onemovie-link").val();
+            if (! oneLink ) {
+                alertBox.show();
+                alertBox.removeClass().addClass("alert alert-danger");
+                alertBox.html("Link phim không thể để trống");
+                return false;
+            }
+            oneLink = new URL(oneLink);
+            let pathName = oneLink.pathname;
+            let pattern = /id\/(\d+?)\.html/i;
+            let movie_id = pathName.match(pattern);
+            $.ajax({
+                type: "POST",
+                url: ajaxurl,
+                data: {
+                    action: "nguon_crawl_by_id",
+                    api: "https://api.nguonphim.tv/api.php/provide/vod/?ac=list",
+                    param: `ac=detail&ids=${movie_id}`,
+                },
+                success: function (response) {
+                    let data = JSON.parse(response);
+                    if (data.code > 1) {
+                        alertBox.show();
+                        alertBox.removeClass().addClass("alert alert-danger");
+                        alertBox.html(data.message);
+                    } else {
+                        alertBox.show();
+                        alertBox.removeClass().addClass("alert alert-success");
+                        alertBox.html(data.message)
+                    }
+                    buttonOneCrawl.html("Thu Thập Ngay");
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert("Something went wrong");
+                    buttonOneCrawl.html("Thu Thập Ngay");
+                }
             });
         });
 

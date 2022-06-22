@@ -18,10 +18,16 @@ $plugin_path = plugin_dir_url( __DIR__ );
                         <div class="input-group mb-3">
                             <input type="hidden" id="plugin_path" name="plugin_path" value="<?php echo $plugin_path?>">
                         </div>
-                        <div class="input-group mb-3">
+                        <div class="input-group">
                             <span class="input-group-text">Nhập vào JSON API</span>
                             <input type="text" class="form-control" id="jsonapi-url" value="https://api.nguonphim.tv/api.php/provide/vod/?ac=list" placeholder="https://api.nguonphim.tv/api.php/provide/vod/?ac=list">
                             <button class="btn btn-primary" type="button" id="api-check">Kiểm Tra</button>
+                        </div>
+                        <p class="fst-italic fs-6 my-1">Hoặc crawl theo link chi tiết:</p>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">Nhập vào link phim</span>
+                            <input type="text" class="form-control" id="onemovie-link" placeholder="https://nguon.tv/index.php/vod/detail/id/7693.html" >
+                            <button class="btn btn-primary" type="button" id="onemovie-crawl">Thu Thập Ngay</button>
                         </div>
                         <div id="alert-box" class="alert" style="display: none;" role="alert"></div>
                     </div>
