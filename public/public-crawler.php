@@ -416,10 +416,14 @@ class Nguon_Movies_Crawler {
 
             foreach ($episodes as $key => $value) {
                 list($episode, $url) = explode('$', $value);
+                if ( empty($url) || strpos($episode, 'http') !== false ) {
+                    $url = $episode;
+                    $episode = 'Tập ' . ($key + 1);
+                }
                 $ep_data['halimmovies_ep_name'] = trim($episode);
                 $ep_data['halimmovies_ep_slug'] = sanitize_title($episode);
                 $ep_data['halimmovies_ep_type'] = $server_name == 'nguon' ? 'embed' : 'link';
-                $ep_data['halimmovies_ep_link'] = $url;
+                $ep_data['halimmovies_ep_link'] = trim(preg_replace('/\\\t/', '', $url));
                 $ep_data['halimmovies_ep_subs'] = [];
                 $ep_data['halimmovies_ep_listsv'] = [];
                 $slug_name = str_replace("-", "_", sanitize_title(trim($episode)));
