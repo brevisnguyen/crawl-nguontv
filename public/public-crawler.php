@@ -52,6 +52,22 @@ class Nguon_Movies_Crawler {
     }
 
     /**
+     * Get image via CURL
+     */
+    private function img_curl($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);       
+        $data = curl_exec($ch);
+        curl_close($ch);
+        return $data;
+    }
+
+    /**
 	 * wp_ajax_nguon_crawler_api action Callback function
 	 *
 	 * @param  string $api url
@@ -335,7 +351,7 @@ class Nguon_Movies_Crawler {
 	 */
     public function save_images($image_url, $post_id, $posttitle, $set_thumb = false)
     {
-        $file = file_get_contents($image_url);
+        $file = $this->img_curl($image_url);
         $postname = sanitize_title($posttitle);
         $im_name = "$postname-$post_id.jpg";
         $res = wp_upload_bits($im_name, '', $file);
