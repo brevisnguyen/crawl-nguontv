@@ -20,25 +20,25 @@ if ( ! defined( 'WPINC' ) ) {
  * Currently plugin version.
  * Start at version 1.0.0
  */
-define( 'PLUGIN_NAME_VERSION', '2.0.1' );
+define( 'NGUONTV_PLUGIN_VERSION', '2.0.1' );
 
 /**
  * The unique identifier of this plugin.
  */
 set_time_limit(0);
-if ( defined( 'PLUGIN_NAME_VERSION' ) ) {
-    $version = PLUGIN_NAME_VERSION;
+if ( defined( 'NGUONTV_PLUGIN_VERSION' ) ) {
+    $version = NGUONTV_PLUGIN_VERSION;
 } else {
     $version = '1.0.0';
 }
-define('PLUGIN_NAME', 'movies-crawler');
-define('VERSION', $version);
+define('NGUONTV_NAME', 'nguontv-crawler');
+define('NGUONTV_VERSION', $version);
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-plugin-name-activator.php
  */
-function activate_plugin_name() {
+function activate_nguontv() {
     // Code
 }
 
@@ -46,23 +46,23 @@ function activate_plugin_name() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-plugin-name-deactivator.php
  */
-function deactivate_plugin_name() {
+function deactivate_nguontv() {
     // Code
 }
 
-register_activation_hook( __FILE__, 'activate_plugin_name' );
-register_deactivation_hook( __FILE__, 'deactivate_plugin_name' );
+register_activation_hook( __FILE__, 'activate_nguontv' );
+register_deactivation_hook( __FILE__, 'deactivate_nguontv' );
 
 /**
  * Provide a public-facing view for the plugin
  */
-function movies_crawler_add_menu() {
+function nguon_crawler_add_menu() {
     add_menu_page(
         __('Movies Crawler Tools', 'textdomain'),
-        'Movies Crawler',
+        'NguonTV Crawl',
         'manage_options',
         'movies-crawler-tools',
-        'movies_crawler_page_menu',
+        'nguon_crawler_page_menu',
         'dashicons-buddicons-replies',
         2
     );
@@ -71,7 +71,7 @@ function movies_crawler_add_menu() {
 /**
  * Include the following files that make up the plugin
  */
-function movies_crawler_page_menu() {
+function nguon_crawler_page_menu() {
     require_once plugin_dir_path(__FILE__) . 'public/partials/movies_crawler_view.php';
 }
 
@@ -85,11 +85,11 @@ function movies_crawler_page_menu() {
  */
 require_once plugin_dir_path( __FILE__ ) . 'public/public-crawler.php';
 function run_plugin_name() {
-    add_action('admin_menu', 'movies_crawler_add_menu');
+    add_action('admin_menu', 'nguon_crawler_add_menu');
 
-    $plugin_admin = new Nguon_Movies_Crawler( PLUGIN_NAME, VERSION );
-    add_action('in_admin_header', array($plugin_admin, 'enqueue_scripts'));
-    add_action('in_admin_header', array($plugin_admin, 'enqueue_styles'));
+    $plugin_admin = new Nguon_Movies_Crawler( NGUONTV_NAME, NGUONTV_VERSION );
+    add_action('in_admin_header', array($plugin_admin, 'enqueue_nguon_scripts'));
+    add_action('in_admin_header', array($plugin_admin, 'enqueue_nguon_styles'));
 
     add_action('wp_ajax_nguon_crawler_api', array($plugin_admin, 'nguon_crawler_api'));
     add_action('wp_ajax_nguon_get_movies_page', array($plugin_admin, 'nguon_get_movies_page'));

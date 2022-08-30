@@ -24,7 +24,7 @@ class Nguon_Movies_Crawler {
     /**
      * Register the JavaScript for the public-facing side of the site.
      */
-    public function enqueue_scripts() {
+    public function enqueue_nguon_scripts() {
         wp_enqueue_script( $this->plugin_name . 'mainjs', plugin_dir_url( __FILE__ ) . 'js/main.js', array( 'jquery' ), $this->version, false );
         wp_enqueue_script( $this->plugin_name . 'bootstrapjs', plugin_dir_url( __FILE__ ) . 'js/bootstrap.bundle.min.js', array(), $this->version, false );
     }
@@ -32,7 +32,7 @@ class Nguon_Movies_Crawler {
     /**
      * Register the stylesheets for the public-facing side of the site.
      */
-    public function enqueue_styles() {
+    public function enqueue_nguon_styles() {
         wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/style.css', array(), $this->version, 'all' );
     }
 
