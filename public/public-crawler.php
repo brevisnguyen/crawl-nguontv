@@ -353,7 +353,8 @@ class Nguon_Movies_Crawler {
     {
         $file = $this->img_curl($image_url);
         $postname = sanitize_title($posttitle);
-        $im_name = "$postname-$post_id.jpg";
+        $file_ext = pathinfo( parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION );
+        $im_name = "$postname-$post_id.$file_ext";
         $res = wp_upload_bits($im_name, '', $file);
         $dirs = wp_upload_dir();
         $filetype = wp_check_filetype($res['file']);
