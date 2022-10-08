@@ -355,7 +355,6 @@ class Nguon_Movies_Crawler {
 
     /**
 	 * Save movie thumbail to WP
-	 *
 	 * @param  string   $image_url   thumbail url
 	 * @param  int      $post_id     post id
 	 * @param  bool     $set_thumb   set thumb
@@ -391,22 +390,63 @@ class Nguon_Movies_Crawler {
             if ( ! empty( $results['error'] ) ) {
                 // Insert any error handling here.
             } else {
+                // $webp_img = $results;
+                $webp_img = $this->resize_image($results, 300, TRUE);
                 $attachment = array(
-                    'guid' => $results['url'],
-                    'post_mime_type' => $results['type'],
-                    'post_title' => preg_replace('/\.[^.]+$/', '', basename($results['file'])),
+                    'guid' => $webp_img['url'],
+                    'post_mime_type' => $webp_img['type'],
+                    'post_title' => preg_replace('/\.[^.]+$/', '', basename($webp_img['file'])),
                     'post_content' => '',
                     'post_status' => 'inherit'
                 );
-                $attach_id = wp_insert_attachment($attachment, $results['file'], $post_id);
+                $attach_id = wp_insert_attachment($attachment, $webp_img['file'], $post_id);
 
                 if ( $set_thumb != false ) {
                     set_post_thumbnail($post_id, $attach_id);
                 }
 
-                return $results;
+                return $webp_img;
             }
         }
+    }
+
+    /**
+     * Save image to Webp
+     * @param string $source Image source
+     * @param int $quality Image quality
+     * @param boolean $removeOld Remove old image
+     */
+    public function resize_image($source, $width, $remove_old = TRUE)
+    {
+        $file = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $source['file']);
+        $dir = pathinfo($file, PATHINFO_DIRNAME);
+        $name = pathinfo($file, PATHINFO_BASENAME);
+        $destination = $dir . DIRECTORY_SEPARATOR . $name;
+        $info = getimagesize($file);
+        if ($info['mime'] == 'image/jpeg')
+            $image = imagecreatefromjpeg($file);
+        elseif ($info['mime'] == 'image/gif') {
+            $image = imagecreatefromgif($file);
+        } elseif ($info['mime'] == 'image/png') {
+            $image = imagecreatefrompng($file);
+        } else {
+            return $source;
+        }
+
+        if ($remove_old) {
+            unlink($file);
+        }
+
+        $resized = imagescale($image, $width);
+
+        if ($info['mime'] == 'image/jpeg')
+            imagejpeg($resized, $destination, 100);
+        elseif ($info['mime'] == 'image/gif') {
+            imagegif($resized, $destination, 100);
+        } elseif ($info['mime'] == 'image/png') {
+            imagepng($resized, $destination, 9);
+        }
+        return $source;
     }
 
     /**
