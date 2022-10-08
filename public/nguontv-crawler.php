@@ -25,7 +25,7 @@ class Nguon_Movies_Crawler {
      * Register the JavaScript for the public-facing side of the site.
      */
     public function enqueue_nguon_scripts() {
-        wp_enqueue_script( $this->plugin_name . 'mainjs', plugin_dir_url( __FILE__ ) . 'js/main.js', array( 'jquery' ), $this->version, false );
+        wp_enqueue_script( $this->plugin_name . 'nguontvjs', plugin_dir_url( __FILE__ ) . 'js/nguontv.js', array( 'jquery' ), $this->version, false );
         wp_enqueue_script( $this->plugin_name . 'bootstrapjs', plugin_dir_url( __FILE__ ) . 'js/bootstrap.bundle.min.js', array(), $this->version, false );
     }
 
@@ -89,11 +89,17 @@ class Nguon_Movies_Crawler {
             echo json_encode(['code' => 999, 'message' => 'Mẫu JSON không đúng, không hỗ trợ thu thập']);
             die();
         }
+        $input_dom = '<div class="form-check form-check-inline removeable"><input class="form-check-input mt-0" type="radio" name="type_id" value="{type_id}" id="type_{type_id}"><label class="form-check-label" for="type_{type_id}">{type_name}</label></div>';
+        $html = '';
+        foreach ( $data->class as $type ) {
+            $html .= str_replace(['{type_id}', '{type_name}'], [$type->type_id, $type->type_name], $input_dom);
+        }
         $page_array = array(
             'code'              => 1,
             'last_page'         => $data->pagecount,
-            'per_page'          => $data->limit,
+            'update_today'      => $latest_data->total,
             'total'             => $data->total,
+            'type_list'         => $html,
             'full_list_page'    => range(1, $data->pagecount),
             'latest_list_page'  => range(1, $latest_data->pagecount),
         );
@@ -115,9 +121,14 @@ class Nguon_Movies_Crawler {
         {
             $url = $_POST['api'];
             $params = $_POST['param'];
+            $type_id = $_POST['type_id'];
+            
             $url = strpos($url, '?') === false ? $url .= '?' : $url .= '&';
+            if ( $type_id !== null || $type_id !== '0' ) {
+                $params .= '&t=' . $type_id;
+            }
             $response = $this->curl($url . $params);
-    
+
             $data = json_decode($response);
             if ( !$data ) {
                 echo json_encode(['code' => 999, 'message' => 'Mẫu JSON không đúng, không hỗ trợ thu thập']);
@@ -163,9 +174,8 @@ class Nguon_Movies_Crawler {
 			'posts_per_page' => 1,
 			'meta_query' => array(
 				array(
-					'key' => '_halim_metabox_options',
-					'value' => $movie_data['org_title'],
-					'compare' => 'LIKE'
+					'key' => '_nguontv_id',
+					'value' => $movie_data['movie_id'],
 				)
 			)
 		);
@@ -236,6 +246,7 @@ class Nguon_Movies_Crawler {
                     $status = 'completed';
                 }
             }
+
             $categories = array_merge($this->format_text($data['type_name']), $this->format_text($data['vod_class']));
             $tags = [];
             array_push($tags, sanitize_text_field($data['vod_name']));
@@ -243,22 +254,23 @@ class Nguon_Movies_Crawler {
     
             $movie_data = [
                 'title' => $data['vod_name'],
-                'org_title' => $data['vod_name'],
+                'org_title' => ($data['vod_en'] == trim($data['vod_en']) && strpos($data['vod_en'], ' ') !== false) ? $data['vod_en'] : $data['vod_name'],
                 'pic_url' => $data['vod_pic'],
                 'actor' => $this->format_text($data['vod_actor']),
                 'director' => $this->format_text($data['vod_director']),
-                'episode' => $data['vod_remarks'],
+                'episode' => $type == 'single_movies' ? 'Full' : $data['vod_remarks'],
                 'episodes' => $this->get_play_url($data['vod_play_from'], $data['vod_play_note'], $data['vod_play_url']),
                 'country' => $data['vod_area'],
-                'language' => $data['vod_lang'],
+                'language' => 'Vietsub',
                 'year' => $data['vod_year'],
                 'content' => preg_replace('/\\r?\\n/s', '', $data['vod_content']),
                 'tags' => $tags,
-                'quality' => $data['vod_version'],
+                'quality' => ['HD', '1080P', '720P'][random_int(0, 2)],
                 'type' => $type,
                 'categories' => $categories,
                 'duration' => $duration,
                 'status' => $status,
+                'movie_id' => $data['vod_id'],
             ];
         }
         return $movie_data;
@@ -294,8 +306,7 @@ class Nguon_Movies_Crawler {
         );
         $post_id = wp_insert_post($post_data);
 
-        $this->save_images($data['pic_url'], $post_id, $data['title'], true);
-        $thumb_image_url = get_the_post_thumbnail_url($post_id, 'movie-thumb');
+        $results = $this->save_images($data['pic_url'], $post_id, true);
         wp_set_object_terms($post_id, $data['status'], 'status', false);
 
         $post_format = halim_get_post_format_type($data['type']);
@@ -304,8 +315,8 @@ class Nguon_Movies_Crawler {
         $post_meta_movies = array(
             'halim_movie_formality' => $data['type'],
             'halim_movie_status' => strtolower($data['status']),
-            'halim_poster_url' => '',
-            'halim_thumb_url' => $thumb_image_url,
+            'halim_poster_url' => $results['url'],
+            'halim_thumb_url' => $results['url'],
             'halim_original_title' => $data['org_title'],
             'halim_trailer_url' => '',
             'halim_runtime' => $data['duration'],
@@ -338,6 +349,7 @@ class Nguon_Movies_Crawler {
         update_post_meta($post_id, '_halim_metabox_options', $post_meta_movies);
         update_post_meta($post_id, '_halimmovies', json_encode($default_episode, JSON_UNESCAPED_UNICODE));
         update_post_meta($post_id, '_edit_last', 1);
+        add_post_meta($post_id, '_nguontv_id', $data['movie_id']);
         return $post_id;
     }
 
@@ -346,32 +358,55 @@ class Nguon_Movies_Crawler {
 	 *
 	 * @param  string   $image_url   thumbail url
 	 * @param  int      $post_id     post id
-	 * @param  string   $posttitle   post title
 	 * @param  bool     $set_thumb   set thumb
 	 */
-    public function save_images($image_url, $post_id, $posttitle, $set_thumb = false)
+    public function save_images($image_url, $post_id, $set_thumb = false)
     {
-        $file = $this->img_curl($image_url);
-        $postname = sanitize_title($posttitle);
-        $file_ext = pathinfo( parse_url($image_url, PHP_URL_PATH), PATHINFO_EXTENSION );
-        $im_name = "$postname-$post_id.$file_ext";
-        $res = wp_upload_bits($im_name, '', $file);
-        $dirs = wp_upload_dir();
-        $filetype = wp_check_filetype($res['file']);
-        $attachment = array(
-            'guid' => $dirs['baseurl'] . '/' . _wp_relative_upload_path($res['file']),
-            'post_mime_type' => $filetype['type'],
-            'post_title' => preg_replace('/\.[^.]+$/', '', basename($res['file'])),
-            'post_content' => '',
-            'post_status' => 'inherit'
-        );
-        $attach_id = wp_insert_attachment($attachment, $res['file'], $post_id);
-        $attach_data = wp_generate_attachment_metadata($attach_id, $res['file']);
-        wp_update_attachment_metadata($attach_id, $attach_data);
-        if ($set_thumb != false) {
-            set_post_thumbnail($post_id, $attach_id);
+        require_once( ABSPATH . "/wp-admin/includes/file.php");
+
+        $temp_file = download_url( $image_url );
+        if ( ! is_wp_error( $temp_file ) ) {
+
+            $mime_extensions = array(
+                'jpg'          => 'image/jpg',
+                'jpeg'         => 'image/jpeg',
+                'gif'          => 'image/gif',
+                'png'          => 'image/png',
+                'webp'         => 'image/webp',
+            );
+            $file = array(
+                'name'     => basename($image_url), // ex: wp-header-logo.png
+                'type'     => $mime_extensions[pathinfo( $image_url, PATHINFO_EXTENSION )],
+                'tmp_name' => $temp_file,
+                'error'    => 0,
+                'size'     => filesize( $temp_file ),
+            );
+            $overrides = array(
+                'test_form' => false,
+                'test_size' => true,
+                'test_upload' => true,
+            );
+            $results = wp_handle_sideload( $file, $overrides );
+        
+            if ( ! empty( $results['error'] ) ) {
+                // Insert any error handling here.
+            } else {
+                $attachment = array(
+                    'guid' => $results['url'],
+                    'post_mime_type' => $results['type'],
+                    'post_title' => preg_replace('/\.[^.]+$/', '', basename($results['file'])),
+                    'post_content' => '',
+                    'post_status' => 'inherit'
+                );
+                $attach_id = wp_insert_attachment($attachment, $results['file'], $post_id);
+
+                if ( $set_thumb != false ) {
+                    set_post_thumbnail($post_id, $attach_id);
+                }
+
+                return $results;
+            }
         }
-        return $res;
     }
 
     /**
@@ -386,6 +421,7 @@ class Nguon_Movies_Crawler {
         $arr = explode(',', sanitize_text_field($string));
         foreach ($arr as &$item) {
             $item = ucwords(trim($item));
+            $item = mb_strtoupper(mb_substr($item, 0, 1)).mb_substr($item, 1, mb_strlen($item));
         }
         return $arr;
     }
@@ -424,30 +460,35 @@ class Nguon_Movies_Crawler {
     private function get_play_url($servers_str, $note, $urls_str)
     {
         $server_add = array();
-        $servers = explode($note, $servers_str);
-        $urls = explode($note, $urls_str);
-        foreach ( $servers as $key => $server_name ) {
-            $server_info["halimmovies_server_name"] = $server_name == 'nguon' ? 'Server #Embed' : 'Server #M3U8';
-            $server_info["halimmovies_server_data"] = array();
-            $episodes = explode('#', $urls[$key]);
+        list($embed_links, $hsl_links) = explode($note, $urls_str); // [embed, hsl]
+        $server_info["halimmovies_server_name"] = 'Vietsub #1';
+        $server_info["halimmovies_server_data"] = array();
+        $episodes = explode('#', $hsl_links);
+        $episodes_sub = explode('#', $embed_links);
 
-            foreach ($episodes as $key => $value) {
-                list($episode, $url) = explode('$', $value);
-                if ( empty($url) || strpos($episode, 'http') !== false ) {
-                    $url = $episode;
-                    $episode = 'Tập ' . ($key + 1);
-                }
-                $ep_data['halimmovies_ep_name'] = trim($episode);
-                $ep_data['halimmovies_ep_slug'] = sanitize_title($episode);
-                $ep_data['halimmovies_ep_type'] = $server_name == 'nguon' ? 'embed' : 'link';
-                $ep_data['halimmovies_ep_link'] = trim(preg_replace('/\\\t/', '', $url));
-                $ep_data['halimmovies_ep_subs'] = [];
-                $ep_data['halimmovies_ep_listsv'] = [];
-                $slug_name = str_replace("-", "_", sanitize_title(trim($episode)));
-                $server_info["halimmovies_server_data"][$slug_name] = $ep_data;
+        foreach ($episodes as $key => $value) {
+            $extract_url_pattern = "/https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)/";
+            preg_match_all($extract_url_pattern, $value, $matches);
+            if ( $matches ) {
+                $ep_link = str_replace('http://', 'https://', $matches[0][0]);
+                $ep_name = count($episodes) > 1 ? $key + 1 : 'Full';
+                $_slug = sanitize_title($ep_name);
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_name'] = $ep_name;
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_slug'] = sanitize_title($ep_name);
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_type'] = 'link';
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_link'] = $ep_link;
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_subs'] = null;
+                $server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_listsv'] = array();
+
+                preg_match_all($extract_url_pattern, $episodes_sub[$key], $sub_matches);
+                $ep_sub_link = str_replace('http://', 'https://', $sub_matches[0][0]);
+                $varSub['halimmovies_ep_listsv_link'] = $ep_sub_link;
+                $varSub['halimmovies_ep_listsv_name'] = 'Dự phòng';
+                $varSub['halimmovies_ep_listsv_type'] = 'embed';
+                array_push($server_info['halimmovies_server_data'][$_slug]['halimmovies_ep_listsv'], $varSub);
             }
-            array_push($server_add, $server_info);
         }
+        array_push($server_add, $server_info);
         return $server_add;
     }
 }

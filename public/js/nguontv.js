@@ -75,7 +75,8 @@
                         latestPageList = data.latest_list_page;
                         fullPageList = data.full_list_page
                         maxPageTo = data.last_page;
-                        $("#movies-total").html(data.total); $("#last-page").html(data.last_page); $("#per-page").html(data.per_page);
+                        $("#movies-total").html(data.total); $("#last-page").html(data.last_page); $("#update-today").html(data.update_today);
+                        $("#type_list").children('div.removeable').remove();$("#type_list").append(data.type_list);
                     }
                 },
             });
@@ -226,6 +227,7 @@
                     action: "nguon_get_movies_page",
                     api: apiUrl,
                     param: `ac=list&h=${tempHour}&pg=${currentPage}`,
+                    type_id: $("#type_list input[name='type_id']:checked").val(),
                 },
                 beforeSend: function () {
                     divCurrentPage.show();
@@ -243,11 +245,11 @@
                         alertBox.show(); alertBox.removeClass().addClass("alert alert-danger");
                         alertBox.html(data.message);
                     } else {
+                        console.log(data.movies);
                         let mIdList = [];
                         $.each(data.movies, function(idx, movie) {
                             mIdList.push(movie.vod_id);
                         });
-                        console.log(mIdList);
                         crawl_movie_by_id(mIdList, data.movies);
                     }
                 },

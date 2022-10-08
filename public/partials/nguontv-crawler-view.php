@@ -1,6 +1,6 @@
 <?php
 foreach (get_plugins() as $key=>$value){
-    if($value['Name']=='Movies Crawler'){
+    if($value['Name']=='NguonTV Crawler'){
         $thisversion= $value['Version'];
     }
 }
@@ -13,7 +13,7 @@ $plugin_path = plugin_dir_url( __DIR__ );
         <div class="row justify-content-center">
             <div class="col">
                 <div class="card-md">
-                    <div class="card-header text-center h4">Moives Crawler <?php echo $thisversion?></div>
+                    <div class="card-header text-center h4">NguonTV Crawler <?php echo $thisversion?></div>
                     <div class="card-body">
                         <div class="input-group mb-3">
                             <input type="hidden" id="plugin_path" name="plugin_path" value="<?php echo $plugin_path?>">
@@ -50,8 +50,13 @@ $plugin_path = plugin_dir_url( __DIR__ );
                                 <span id="last-page" class="badge bg-primary rounded-pill"></span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Số phim mỗi page
-                                <span id="per-page" class="badge bg-primary rounded-pill"></span>
+                                Cập nhật hôm nay
+                                <span id="update-today" class="badge bg-primary rounded-pill"></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center" id="type_list">Thể loại:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input mt-0" type="radio" name="type_id" value="0"><label class="form-check-label">All</label>
+                                </div>
                             </li>
                         </ul>
                     </div>
@@ -79,13 +84,13 @@ $plugin_path = plugin_dir_url( __DIR__ );
                     <div class="card-footer">
                         <button id="roll-crawl" type="button" class="btn btn-success position-absolute">Trộn Link</button>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button id="selected-crawl" type="button" class="btn btn-warning">Thu Thập</button>
+                            <button id="selected-crawl" type="button" class="btn btn-warning">Thu Thập Page</button>
                             <button id="update-crawl" type="button" class="btn btn-warning">Thu Thập Hôm Nay</button>
                             <button id="full-crawl" type="button" class="btn btn-primary">Thu Thập Toàn Bộ</button>
                         </div>
                     </div>
                     <div class="card-footer mt-4">
-                        <h6>Nếu có lỗi xảy ra hoặc cần yêu cầu chức năng mới hãy: <a target="_blank" href="https://github.com/brevis-ng/crawl-nguontv/issues/new">Báo Lỗi/Thêm Chức Năng</a></h6>
+                        <h6>Tham gia nhóm trao đổi chia sẻ: <a target="_blank" href="https://t.me/+FPSDDbRPRuozNjZl">https://t.me/+FPSDDbRPRuozNjZl</a></h6>
                     </div>
                 </div>
             </div>

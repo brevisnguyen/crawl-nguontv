@@ -2,7 +2,7 @@
 
 /*
 * @wordpress-plugin
-* Plugin Name: Movies Crawler
+* Plugin Name: NguonTV Crawler
 * Plugin URI: https://nguon.tv
 * Description: Thu thập phim từ NguonTV - Tương thích theme HaLimMovie
 * Version: 2.0.1
@@ -17,22 +17,12 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Currently plugin version.
- * Start at version 1.0.0
- */
-define( 'NGUONTV_PLUGIN_VERSION', '2.0.1' );
-
-/**
  * The unique identifier of this plugin.
  */
 set_time_limit(0);
-if ( defined( 'NGUONTV_PLUGIN_VERSION' ) ) {
-    $version = NGUONTV_PLUGIN_VERSION;
-} else {
-    $version = '1.0.0';
-}
+
 define('NGUONTV_NAME', 'nguontv-crawler');
-define('NGUONTV_VERSION', $version);
+define('NGUONTV_VERSION', '2.0.1');
 
 /**
  * The code that runs during plugin activation.
@@ -58,10 +48,10 @@ register_deactivation_hook( __FILE__, 'deactivate_nguontv' );
  */
 function nguon_crawler_add_menu() {
     add_menu_page(
-        __('Movies Crawler Tools', 'textdomain'),
+        __('NguonTV Crawler Tools', 'textdomain'),
         'NguonTV Crawl',
         'manage_options',
-        'movies-crawler-tools',
+        'nguontv-crawler-tools',
         'nguon_crawler_page_menu',
         'dashicons-buddicons-replies',
         2
@@ -72,7 +62,7 @@ function nguon_crawler_add_menu() {
  * Include the following files that make up the plugin
  */
 function nguon_crawler_page_menu() {
-    require_once plugin_dir_path(__FILE__) . 'public/partials/movies_crawler_view.php';
+    require_once plugin_dir_path(__FILE__) . 'public/partials/nguontv-crawler-view.php';
 }
 
 /**
@@ -83,8 +73,8 @@ function nguon_crawler_page_menu() {
  * not affect the page life cycle.
  * 
  */
-require_once plugin_dir_path( __FILE__ ) . 'public/public-crawler.php';
-function run_plugin_name() {
+require_once plugin_dir_path( __FILE__ ) . 'public/nguontv-crawler.php';
+function run_nguon_crawler() {
     add_action('admin_menu', 'nguon_crawler_add_menu');
 
     $plugin_admin = new Nguon_Movies_Crawler( NGUONTV_NAME, NGUONTV_VERSION );
@@ -95,4 +85,4 @@ function run_plugin_name() {
     add_action('wp_ajax_nguon_get_movies_page', array($plugin_admin, 'nguon_get_movies_page'));
     add_action('wp_ajax_nguon_crawl_by_id', array($plugin_admin, 'nguon_crawl_by_id'));
 }
-run_plugin_name();
+run_nguon_crawler();
