@@ -5,7 +5,7 @@
 * Plugin Name: NguonTV Crawler
 * Plugin URI: https://nguon.tv
 * Description: Thu thập phim từ NguonTV - Tương thích theme HaLimMovie
-* Version: 2.0.1
+* Version: 2.0.2
 * Requires PHP: 7.4^
 * Author: Brevis Nguyen
 * Author URI: https://github.com/brevis-ng
@@ -22,7 +22,7 @@ if ( ! defined( 'WPINC' ) ) {
 set_time_limit(0);
 
 define('NGUONTV_NAME', 'nguontv-crawler');
-define('NGUONTV_VERSION', '2.0.1');
+define('NGUONTV_VERSION', '2.0.2');
 
 /**
  * The code that runs during plugin activation.
