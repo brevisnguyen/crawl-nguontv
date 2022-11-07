@@ -46,7 +46,12 @@ class Nguon_Movies_Crawler {
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $response = curl_exec($ch);
+
+        if ( curl_errno($ch) ) {
+            $response = 'Curl error: ' . curl_error($ch);
+        }
         curl_close($ch);
         return $response;
     }
@@ -86,7 +91,7 @@ class Nguon_Movies_Crawler {
         $data = json_decode($full_response);
         $latest_data = json_decode($latest_response);
         if ( !$data ) {
-            echo json_encode(['code' => 999, 'message' => 'Mẫu JSON không đúng, không hỗ trợ thu thập']);
+            echo json_encode(['code' => 999, 'message' => 'Mẫu JSON không đúng, không hỗ trợ thu thập: '.$full_response]);
             die();
         }
         $input_dom = '<div class="form-check form-check-inline removeable"><input class="form-check-input mt-0" type="radio" name="type_id" value="{type_id}" id="type_{type_id}"><label class="form-check-label" for="type_{type_id}">{type_name}</label></div>';
