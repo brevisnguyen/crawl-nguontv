@@ -220,6 +220,18 @@ class Nguon_Movies_Crawler {
         }
 
         $post_id = $this->insert_movie($movie_data);
+
+        if ( ! empty( $post_id['status'] ) && $post_id['status'] == 'error' ) {
+
+            $result = array(
+                'code' => 999,
+                'message' => $post_id['error'],
+            );
+            echo json_encode($result);
+            wp_die();
+
+        }
+
         update_post_meta($post_id, '_halimmovies', json_encode($movie_data['episodes'], JSON_UNESCAPED_UNICODE));
 
         $result = array(
@@ -312,6 +324,11 @@ class Nguon_Movies_Crawler {
         $post_id = wp_insert_post($post_data);
 
         $results = $this->save_images($data['pic_url'], $post_id, true);
+
+        if ( ! empty( $results['status'] ) && $results['status'] == 'error' ) {
+            return $results;
+        }
+
         wp_set_object_terms($post_id, $data['status'], 'status', false);
 
         $post_format = halim_get_post_format_type($data['type']);
@@ -394,6 +411,7 @@ class Nguon_Movies_Crawler {
         
             if ( ! empty( $results['error'] ) ) {
                 // Insert any error handling here.
+                return array( 'status' => 'error', 'error' => $results['error'] );
             } else {
                 // $webp_img = $results;
                 $webp_img = $this->resize_image($results, 300, TRUE);
