@@ -430,6 +430,8 @@ class Nguon_Movies_Crawler {
 
                 return $webp_img;
             }
+        } else {
+            return array( 'status' => 'error', 'error' => $temp_file->get_error_message() );
         }
     }
 
