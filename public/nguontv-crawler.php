@@ -405,9 +405,9 @@ class Nguon_Movies_Crawler {
             $overrides = array(
                 'test_form' => false,
                 'test_size' => true,
-                'test_upload' => true,
             );
             $results = wp_handle_sideload( $file, $overrides );
+            unlink($temp_file);
         
             if ( ! empty( $results['error'] ) ) {
                 // Insert any error handling here.
