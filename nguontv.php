@@ -6,7 +6,7 @@
 * Plugin URI: https://nguon.tv
 * Description: Thu thập phim từ NguonTV - Tương thích theme HaLimMovie
 * Version: 2.0.2
-* Requires PHP: 7.4^
+* Requires PHP: 7.0^
 * Author: Brevis Nguyen
 * Author URI: https://github.com/brevis-ng
 */
